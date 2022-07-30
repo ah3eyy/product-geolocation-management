@@ -4,7 +4,6 @@ import apiRoutes from "../routes/api-routes";
 import config from "./index";
 import ErrorHandlerMiddleware from "../routes/middleware/error-handler-middleware";
 import JwtHandler from "../routes/middleware/jwt-handler";
-import expressListRoutes from "express-list-routes";
 
 export default async (app, router, event) => {
 

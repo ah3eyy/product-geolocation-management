@@ -1,8 +1,8 @@
-import server from "./config/server";
+import server from "./src/config/server";
 import express from 'express';
-import database from "./models/database";
+import database from "./src/models/database";
 import event from "events";
-import eventInstance from "./subscribers";
+import eventInstance from "./src/subscribers";
 
 const startServer = async () => {
     const app = express();
