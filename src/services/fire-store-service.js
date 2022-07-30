@@ -1,7 +1,8 @@
 import admin from "firebase-admin";
 import LoggerInstance from "../loader/logger";
+import config from "../config/index";
 
-const serviceAccountPath = require('../config/the-program-357911-1ffdc3574ce3.json');
+const serviceAccountPath = JSON.parse(JSON.stringify(config.firestore));
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccountPath),
