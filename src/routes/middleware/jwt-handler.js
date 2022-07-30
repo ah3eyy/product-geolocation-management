@@ -13,7 +13,8 @@ const JwtHandler = () => {
     }).unless({
         path: [
             '/api/auth/login',
-            '/api/auth/register'
+            '/api/auth/register',
+            '/'
         ]
     });
 
