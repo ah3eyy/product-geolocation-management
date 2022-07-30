@@ -7,9 +7,9 @@
     "clean": "rm -rf build && mkdir build",
     "build-server": "babel -d ./build ./src -s",
     "build": "npm run clean && npm run build-server",
-    "local-start": "nodemon build/server.js",
-    "start": "node -r ./build/server.js",
-    "dev": "nodemon --exec babel-node ./src/server.js",
+    "local-start": "nodemon build/app.js",
+    "start": "node -r ./build/app.js",
+    "dev": "nodemon --exec babel-node ./src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
