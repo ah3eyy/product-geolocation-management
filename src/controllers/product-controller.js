@@ -18,8 +18,7 @@ const ProductController = {
 
     searchProductAddress: async (req, res) => {
         try {
-
-            let address = req.params.address;
+            let address = req.params.address || req.query.address;
 
             let search = await GeoHelper.searchAddress(address);
 

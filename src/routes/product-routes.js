@@ -7,6 +7,7 @@ import joiSchema from "../models/joi-schema";
 export default function (route) {
 
     route.get('/search/:address', productController.searchProductAddress);
+    route.get('/search', productController.searchProductAddress);
 
     route.post('/upload-file', multerService.any(), asyncHandler(productController.uploadToCloudinary));
 

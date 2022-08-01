@@ -14,7 +14,8 @@ const JwtHandler = () => {
         path: [
             '/api/auth/login',
             '/api/auth/register',
-            '/'
+            '/',
+            '/api/products/search'
         ]
     });
 
