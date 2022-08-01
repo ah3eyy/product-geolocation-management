@@ -34,7 +34,7 @@ const ProductSchema = new Schema({
         default: Dinero({amount: 0, currency: NGN})
     },
     images: {
-        type: [String],
+        type: [Object],
         default: null
     }
 }, {

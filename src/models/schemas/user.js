@@ -20,9 +20,13 @@ const UserSchema = new Schema({
         required: true,
         select: false
     },
-    geo_location: {
+    location: {
         type: [Number],
         index: "2dsphere",
+        default: null
+    },
+    phone_number: {
+        type: String,
         default: null
     }
 }, {

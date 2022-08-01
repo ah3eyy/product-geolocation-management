@@ -6,7 +6,11 @@ import joiSchema from "../models/joi-schema";
 
 export default function (route) {
 
+    route.get('/search/:address', productController.searchProductAddress);
+
     route.post('/upload-file', multerService.any(), asyncHandler(productController.uploadToCloudinary));
+
+    route.delete('/delete-image/:id', productController.destroyPicture);
 
     route.get('/', productController.products);
 

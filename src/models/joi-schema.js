@@ -5,7 +5,9 @@ const joiSchema = {
         name: Joi.string().required(),
         email: Joi.string().required(),
         password: Joi.string().required(),
-        address: Joi.string().required()
+        address: Joi.string().required(),
+        location: Joi.optional(),
+        phone_number: Joi.string().required()
     }),
     login: Joi.object({
         email: Joi.string().required(),
@@ -16,7 +18,7 @@ const joiSchema = {
         address: Joi.string().required(),
         available_radius: Joi.optional(),
         images: Joi.optional(),
-        geo_location: Joi.optional(),
+        location: Joi.optional(),
         price: Joi.optional(),
     })
 };

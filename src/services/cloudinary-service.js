@@ -16,6 +16,10 @@ const uploads = {
             }, {resource_type: 'auto'},
         );
     }),
+
+    destroyPicture: (id) => {
+        return cloudinary.uploader.destroy(id)
+    }
 };
 
 export default uploads;

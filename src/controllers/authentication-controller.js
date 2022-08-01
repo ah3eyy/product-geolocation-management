@@ -23,16 +23,29 @@ const authenticationController = {
 
             data['password'] = await GeneralHelper.encryptValue(data.password);
 
-            // check for user current longitude and latitude
-            data['geo_location'] = await GeoHelper.fetchLocationLatLng(data.address);
+            if (data.location.length === 0) {
+                // check for user current longitude and latitude
+                data['location'] = await GeoHelper.fetchLocationLatLng(data.address);
+            }
 
             let user = await userModel(data).save();
 
-            let userToJson = JSON.parse(JSON.stringify(user));
+            let token = Jwt.sign(
+                {
+                    user: user.id
+                },
+                config.jwt_token,
+                {
+                    expiresIn: '2d'
+                }
+            );
 
-            delete userToJson.password;
+            let userData = {
+                token,
+                user: await userModel.findOne({_id: user.id})
+            };
 
-            return successWithData(res, 200, userToJson);
+            return successWithMessageAndData(res, 200, 'Account registered successfully.', userData);
 
         } catch (e) {
 
@@ -83,8 +96,18 @@ const authenticationController = {
                 400
             );
         }
-    }
+    },
 
+    profile: async (req, res) => {
+        let user = req.user;
+
+        return successWithMessageAndData(
+            res,
+            200,
+            'Profile',
+            user
+        )
+    }
 }
 
 export default authenticationController;

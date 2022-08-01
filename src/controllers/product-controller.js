@@ -6,6 +6,7 @@ import config from "../config/index";
 import Product from "../models/schemas/products";
 import User from "../models/schemas/user";
 import Comment from "../models/schemas/comments";
+import AuthHelper from "../helpers/auth-helper";
 
 import {Dinero} from 'dinero.js'
 import {NGN} from '@dinero.js/currencies';
@@ -15,15 +16,35 @@ const {serverResponse, validationError} = ErrorHandler;
 
 const ProductController = {
 
+    searchProductAddress: async (req, res) => {
+        try {
+
+            let address = req.params.address;
+
+            let search = await GeoHelper.searchAddress(address);
+
+            return successWithData(res, 200, search)
+
+        } catch (e) {
+            return serverResponse(res, 'An error occurred searching address', 400);
+        }
+    },
+
     uploadToCloudinary: async (req, res) => {
         if (!req.files) {
             return serverResponse(res, "Please Upload a file", 400);
         }
         const imagePath = req.files[0].path;
         const {
-            url
+            url,
+            id
         } = await upload.picture(imagePath);
-        return successWithData(res, 201, url);
+        return successWithData(res, 201, {url, public_id: id});
+    },
+
+    destroyPicture: async (req, res) => {
+        await upload.picture(req.params.id);
+        return successWithMessage(res, 201, "Image deleted successfully");
     },
 
     createProduct: async (req, res) => {
@@ -33,7 +54,7 @@ const ProductController = {
 
             let name = req.body.name;
             let address = req.body.address;
-            let geo_location = req.body.geo_location;
+            let geo_location = req.body.location;
             let available_radius = req.body.available_radius || config.default_radius;
             let price = req.body.price;
             let images = req.body.images;
@@ -41,13 +62,10 @@ const ProductController = {
             let location = [];
 
             //    sort location if not provided
-            if (!geo_location.lat || !geo_location.lng) {
+            if (geo_location.length > 0) {
                 location = await GeoHelper.fetchLocationLatLng(address)
             } else {
-                location = [
-                    geo_location.lat,
-                    geo_location.lng
-                ];
+                location = geo_location;
             }
 
             if (!price)
@@ -90,7 +108,9 @@ const ProductController = {
 
             let user = req.user;
 
-            let userLocation = user.geo_location;
+            let userAccount = await User.findOne({_id: user.id || user._id});
+
+            let userLocation = user.location;
 
             let products = await Product.find(
                 {
@@ -140,14 +160,12 @@ const ProductController = {
 
         try {
 
-            let product_id = req.params.product_id;
+            let product_id = await AuthHelper.convertToMongoose(req.params.product_id);
+            console.log(product_id);
+
 
             let comment = await Comment.aggregate([
-                {
-                    $addFields: {
-                        "id": "$_id"
-                    }
-                },
+
                 {
                     $match: {
                         product_id: product_id
@@ -155,19 +173,36 @@ const ProductController = {
                 },
                 {
                     $lookup: {
-                        from: "Comment",
+                        from: "comments",
                         localField: "_id",
                         foreignField: 'parent_comment',
-                        as: "reply"
+                        as: "comments"
+                    }
+                },
+
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "comment_by",
+                        foreignField: "_id",
+                        as: "user"
                     }
                 },
                 {
-                    $unset: ["__v", "_id"]
+                    $addFields: {
+                        "id": "$_id"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $unset: ["__v", "_id", "user.password", "user.phone_number", "user.email", "user.createdAt", "user.updatedAt", "user._id", "user.location", "user.__v", "user.address"]
                 }
             ]);
 
-
             return successWithMessageAndData(res, 200, 'Product Comment', comment);
+
         } catch (e) {
             return serverResponse(
                 res,
@@ -182,12 +217,13 @@ const ProductController = {
 
         try {
 
-            let comment = req.body.comment;
+            let comment = req.body.comments;
             let product_id = req.body.product_id;
 
             //    if this comment is a reply
             let parent_comment = req.body.parent_comment;
 
+            console.log(parent_comment);
             let user = req.user;
 
             let commentData = new Comment();
@@ -215,13 +251,14 @@ const ProductController = {
             let commentOwner = null;
 
             if (parent_comment) {
-                let parentCommentData = await Product.findOne({_id: parent_comment});
-                commentOwner = await User.findOne({_id: parentCommentData.product_owner})
+                let parentCommentData = await Comment.findOne({_id: await AuthHelper.convertToMongoose(parent_comment)});
+                commentOwner = await User.findOne({_id: parentCommentData.comment_by})
                 data = [...data, {
                     email: commentOwner.email,
                     phone_number: commentOwner.phone_number,
                     message: `${user.name} replied your comment on product ${parentCommentData.name}`
                 }];
+
             }
 
             event.emit(config.event_constants.NEW_NOTIFICATION, data);

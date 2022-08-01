@@ -30,6 +30,18 @@ const GeoHelper = {
             ];
 
         return [];
+    },
+
+    searchAddress: async (address) => {
+        let locationFind = await geoCoder.geocode({
+            address: address,
+            country: "Nigeria",
+            countryCode: "NG",
+            limit: 10
+        });
+
+
+        return locationFind;
     }
 
 }
